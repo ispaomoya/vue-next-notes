@@ -9,12 +9,33 @@
 </head>
 <body>
 <div id='app'></div>
+<template id='my-app'>
+  <p>{{message}}</p>
+  <button @click='changeMassage'>按钮</button>
+</template>
 <script src='../../dist/vue.global.js'></script>
 <script>
-  debugger
-  Vue.createApp({
-    template:`<h2>哈哈哈</h2>`
-  }).mount('#app')
+  // Vue.createApp({
+  //   template:`<h2>哈哈哈</h2>`
+  // }).mount('#app')
+  const App = {
+    template:'#my-app',
+    data(){
+      return {
+        message:'hello world'
+      }
+    },
+    methods: {
+      changeMassage(){
+        this.message = '1231'
+      }
+    }
+  }
+  // vue是从这里开始处理的
+  // 1调用了createApp(App)函数
+  const app = Vue.createApp(App)
+  // 2调用了app的mount函数
+  app.mount('#app')
 </script>
 </body>
 </html>

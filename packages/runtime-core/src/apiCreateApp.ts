@@ -178,6 +178,7 @@ export function createAppAPI<HostElement>(
   render: RootRenderFunction,
   hydrate?: RootHydrateFunction
 ): CreateAppFunction<HostElement> {
+  //从apiCreateApp返回createApp
   return function createApp(rootComponent, rootProps = null) {
     if (rootProps != null && !isObject(rootProps)) {
       __DEV__ && warn(`root props passed to app.mount() must be an object.`)
@@ -273,13 +274,16 @@ export function createAppAPI<HostElement>(
         context.directives[name] = directive
         return app
       },
-
+// 从app中调用mount函数
       mount(
+        //这里要求传入element，但是我们写的是app.mount('#app')“#app”字符串
+      //在runtime-dom/src/index.ts中重写的mount 
         rootContainer: HostElement,
         isHydrate?: boolean,
         isSVG?: boolean
       ): any {
         if (!isMounted) {
+          // 1创建根组件，vnode，这里跟h()函数一样的
           const vnode = createVNode(
             rootComponent as ConcreteComponent,
             rootProps
@@ -298,6 +302,7 @@ export function createAppAPI<HostElement>(
           if (isHydrate && hydrate) {
             hydrate(vnode as VNode<Node, Element>, rootContainer as any)
           } else {
+            // 渲染函数
             render(vnode, rootContainer, isSVG)
           }
           isMounted = true

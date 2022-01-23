@@ -445,7 +445,7 @@ export interface ComponentInternalInstance {
 const emptyAppContext = createAppContext()
 
 let uid = 0
-
+// 创建组件实例
 export function createComponentInstance(
   vnode: VNode,
   parent: ComponentInternalInstance | null,
@@ -457,19 +457,19 @@ export function createComponentInstance(
     (parent ? parent.appContext : vnode.appContext) || emptyAppContext
 
   const instance: ComponentInternalInstance = {
-    uid: uid++,
-    vnode,
-    type,
-    parent,
-    appContext,
-    root: null!, // to be immediately set
-    next: null,
-    subTree: null!, // will be set synchronously right after creation
+    uid: uid++,//组件唯一的id
+    vnode,//组件vnode
+    type,//vnode节点类型
+    parent,//父组件实例
+    appContext,//app上下文
+    root: null!, // to be immediately set//跟组件实例
+    next: null,//新的组件vnode
+    subTree: null!, // will be set synchronously right after creation//子节点
     effect: null!,
     update: null!, // will be set synchronously right after creation
     scope: new EffectScope(true /* detached */),
-    render: null,
-    proxy: null,
+    render: null,//渲染函数
+    proxy: null,//渲染代理
     exposed: null,
     exposeProxy: null,
     withProxy: null,

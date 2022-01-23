@@ -39,7 +39,9 @@ let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
 
+// 创建渲染器的函数
 function ensureRenderer() {
+  // 如果有渲染器直接返回，没有就创建createRenderer
   return (
     renderer ||
     (renderer = createRenderer<Node, Element | ShadowRoot>(rendererOptions))
@@ -62,8 +64,9 @@ export const render = ((...args) => {
 export const hydrate = ((...args) => {
   ensureHydrationRenderer().hydrate(...args)
 }) as RootHydrateFunction
-
+//1导出createApp
 export const createApp = ((...args) => {
+  // 渲染器，去到了runtime-core/src/renderer.ts
   const app = ensureRenderer().createApp(...args)
 
   if (__DEV__) {
@@ -71,7 +74,9 @@ export const createApp = ((...args) => {
     injectCompilerOptionsCheck(app)
   }
 
+  // 2取出mount
   const { mount } = app
+  // 3重写mount判断你传入的是什么
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
     const container = normalizeContainer(containerOrSelector)
     if (!container) return
