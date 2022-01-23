@@ -550,6 +550,7 @@ export function applyOptions(instance: ComponentInternalInstance) {
 
   // call beforeCreate first before accessing other options since
   // the hook may mutate resolved options (#2791)
+  //这个和create()是另外调用的
   if (options.beforeCreate) {
     callHook(options.beforeCreate, instance, LifecycleHooks.BEFORE_CREATE)
   }
@@ -741,11 +742,12 @@ export function applyOptions(instance: ComponentInternalInstance) {
       provide(key, provides[key])
     })
   }
-
+// 这个和beforeCreate()另外调用的
   if (created) {
     callHook(created, instance, LifecycleHooks.CREATED)
   }
 
+//这里是其他的生命周期方法
   function registerLifecycleHook(
     register: Function,
     hook?: Function | Function[]
@@ -883,7 +885,7 @@ function callHook(
   callWithAsyncErrorHandling(
     isArray(hook)
       ? hook.map(h => h.bind(instance.proxy!))
-      : hook.bind(instance.proxy!),
+      : hook.bind(instance.proxy!),//这里绑定了this
     instance,
     type
   )

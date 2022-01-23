@@ -1231,7 +1231,7 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
-      //初始化,去到runtime-core/src/components.ts文件里面
+      //初始化setupComponent,去到runtime-core/src/components.ts文件里面
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
@@ -1379,6 +1379,7 @@ function baseCreateRenderer(
           if (__DEV__) {
             startMeasure(instance, `render`)
           }
+          // renderComponentRoot 处理subTree
           const subTree = (instance.subTree = renderComponentRoot(instance))
           if (__DEV__) {
             endMeasure(instance, `render`)
@@ -2223,7 +2224,7 @@ function baseCreateRenderer(
     }
     hostRemove(end)
   }
-
+// 卸载mount
   const unmountComponent = (
     instance: ComponentInternalInstance,
     parentSuspense: SuspenseBoundary | null,
@@ -2330,6 +2331,7 @@ function baseCreateRenderer(
       // 创建或者更新组件都是使用patch函数（这里是将根组件挂载到dom上）
       patch(container._vnode || null, vnode, container, null, null, null, isSVG)
     }
+    //这里回调
     flushPostFlushCbs()
     // 放到container上面，缓存vnode
     container._vnode = vnode

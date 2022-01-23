@@ -262,6 +262,11 @@ export interface ComponentRenderContext {
 
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
   get({ _: instance }: ComponentRenderContext, key: string) {
+    // 放到ctx都是components,methods等等
+    // setup处理的结果
+    // data中的数据
+    // props
+    // accessCache缓存
     const { ctx, setupState, data, props, accessCache, type, appContext } =
       instance
 
@@ -291,6 +296,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     // prototype) to memoize what access type a key corresponds to.
     let normalizedProps
     if (key[0] !== '$') {
+      // 能否取到缓存的值
       const n = accessCache![key]
       if (n !== undefined) {
         switch (n) {
@@ -304,12 +310,15 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
             return props![key]
           // default: just fallthrough
         }
+        // 不能取到缓存的值，先经过setupState
       } else if (setupState !== EMPTY_OBJ && hasOwn(setupState, key)) {
         accessCache![key] = AccessTypes.SETUP
         return setupState[key]
+        // 如果setup没有，那就经过data
       } else if (data !== EMPTY_OBJ && hasOwn(data, key)) {
         accessCache![key] = AccessTypes.DATA
         return data[key]
+        // 前面的都没有，取props
       } else if (
         // only cache other properties when instance has declared (thus stable)
         // props
@@ -318,9 +327,11 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
       ) {
         accessCache![key] = AccessTypes.PROPS
         return props![key]
+        // 前面都没有取ctx
       } else if (ctx !== EMPTY_OBJ && hasOwn(ctx, key)) {
         accessCache![key] = AccessTypes.CONTEXT
         return ctx[key]
+        // 前面都没有，返回没找到值
       } else if (!__FEATURE_OPTIONS_API__ || shouldCacheAccess) {
         accessCache![key] = AccessTypes.OTHER
       }
