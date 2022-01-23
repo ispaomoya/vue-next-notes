@@ -578,7 +578,7 @@ export function isStatefulComponent(instance: ComponentInternalInstance) {
 }
 
 export let isInSSRComponentSetup = false
-
+//处理setupComponents
 export function setupComponent(
   instance: ComponentInternalInstance,
   isSSR = false
@@ -586,10 +586,16 @@ export function setupComponent(
   isInSSRComponentSetup = isSSR
 
   const { props, children } = instance.vnode
+  // 有状态组件可以比喻成对象，const app = {data:{},props:{}}
+  // 无状态组件可以比喻成函数，function components(){}
+  // 判断是否是一个有状态的组件
   const isStateful = isStatefulComponent(instance)
+  // 1.初始化props,处理props，attrs
   initProps(instance, props, isStateful, isSSR)
+  // 2.初始化slots
   initSlots(instance, children)
-
+// 3处理完成后，执行setup
+  // 设置有状态组件
   const setupResult = isStateful
     ? setupStatefulComponent(instance, isSSR)
     : undefined
@@ -628,21 +634,26 @@ function setupStatefulComponent(
     }
   }
   // 0. create render proxy property access cache
+  // 创建渲染代理属性访问内存
   instance.accessCache = Object.create(null)
   // 1. create public instance / render proxy
   // also mark it raw so it's never observed
+  // 创建渲染上下文代理，instance.ctx和instance.proxy
   instance.proxy = markRaw(new Proxy(instance.ctx, PublicInstanceProxyHandlers))
   if (__DEV__) {
     exposePropsOnRenderContext(instance)
   }
   // 2. call setup()
+  // 取出setup调用
   const { setup } = Component
   if (setup) {
+    // 有值，就创建setupContext上下文，这个上下文会在函数中被使用
     const setupContext = (instance.setupContext =
       setup.length > 1 ? createSetupContext(instance) : null)
 
     setCurrentInstance(instance)
     pauseTracking()
+    // 执行setup函数，并且把instance.props,setupContext作为参数传进去
     const setupResult = callWithErrorHandling(
       setup,
       instance,
@@ -651,7 +662,7 @@ function setupStatefulComponent(
     )
     resetTracking()
     unsetCurrentInstance()
-
+    // 判断结果是不是期约(promise)
     if (isPromise(setupResult)) {
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance)
 
@@ -675,9 +686,11 @@ function setupStatefulComponent(
         )
       }
     } else {
+      // 如果是函数render函数，如果是对象放到setupState中
       handleSetupResult(instance, setupResult, isSSR)
     }
   } else {
+    // 完成组件实例化设置
     finishComponentSetup(instance, isSSR)
   }
 }
@@ -687,6 +700,7 @@ export function handleSetupResult(
   setupResult: unknown,
   isSSR: boolean
 ) {
+  // 如果是函数
   if (isFunction(setupResult)) {
     // setup returned an inline render function
     if (__SSR__ && (instance.type as ComponentOptions).__ssrInlineRender) {
@@ -696,6 +710,7 @@ export function handleSetupResult(
     } else {
       instance.render = setupResult as InternalRenderFunction
     }
+    // 如果是对象
   } else if (isObject(setupResult)) {
     if (__DEV__ && isVNode(setupResult)) {
       warn(
@@ -708,7 +723,7 @@ export function handleSetupResult(
     if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
       instance.devtoolsRawSetupState = setupResult
     }
-    instance.setupState = proxyRefs(setupResult)
+    instance.setupState = proxyRefs(setupResult)//把代理结果放到setupState上面
     if (__DEV__) {
       exposeSetupStateOnRenderContext(instance)
     }
@@ -719,6 +734,7 @@ export function handleSetupResult(
       }`
     )
   }
+  // 会判断是不是ssr
   finishComponentSetup(instance, isSSR)
 }
 
@@ -734,6 +750,8 @@ let installWithProxy: (i: ComponentInternalInstance) => void
  * For runtime-dom to register the compiler.
  * Note the exported method uses any to avoid d.ts relying on the compiler types.
  */
+// 注册运行时的compiler
+// 在vue入口中用到,packages/vue/src/index.ts
 export function registerRuntimeCompiler(_compile: any) {
   compile = _compile
   installWithProxy = i => {
@@ -796,13 +814,14 @@ export function finishComponentSetup(
             extend(finalCompilerOptions.compatConfig, Component.compatConfig)
           }
         }
+        // 调用compile函数对template进行处理运行时编译模板
         Component.render = compile(template, finalCompilerOptions)
         if (__DEV__) {
           endMeasure(instance, `compile`)
         }
       }
     }
-
+    // 最后赋值给instance.render
     instance.render = (Component.render || NOOP) as InternalRenderFunction
 
     // for runtime-compiled render functions using `with` blocks, the render
@@ -818,6 +837,8 @@ export function finishComponentSetup(
   if (__FEATURE_OPTIONS_API__ && !(__COMPAT__ && skipOptions)) {
     setCurrentInstance(instance)
     pauseTracking()
+    // 对vue2的options api一些支持，vue3是components api
+    // 进到runtime-once/src/componentOptions.ts
     applyOptions(instance)
     resetTracking()
     unsetCurrentInstance()

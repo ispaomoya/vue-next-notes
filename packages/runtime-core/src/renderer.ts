@@ -1231,7 +1231,7 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
-      //初始化
+      //初始化,去到runtime-core/src/components.ts文件里面
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
