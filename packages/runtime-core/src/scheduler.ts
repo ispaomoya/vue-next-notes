@@ -2,7 +2,7 @@ import { ErrorCodes, callWithErrorHandling } from './errorHandling'
 import { isArray, NOOP } from '@vue/shared'
 import { ComponentInternalInstance, getComponentName } from './component'
 import { warn } from './warning'
-
+//nextTick   修改完数据后执行
 export interface SchedulerJob extends Function {
   id?: number
   active?: boolean
@@ -54,7 +54,7 @@ let currentPreFlushParentJob: SchedulerJob | null = null
 
 const RECURSION_LIMIT = 100
 type CountMap = Map<SchedulerJob, number>
-
+// 这里是nextTick函数
 export function nextTick<T = void>(
   this: T,
   fn?: (this: T) => void
@@ -148,7 +148,6 @@ export function queuePreFlushCb(cb: SchedulerJob) {
 export function queuePostFlushCb(cb: SchedulerJobs) {
   queueCb(cb, activePostFlushCbs, pendingPostFlushCbs, postFlushIndex)
 }
-
 export function flushPreFlushCbs(
   seen?: CountMap,
   parentJob: SchedulerJob | null = null
@@ -226,7 +225,7 @@ function flushJobs(seen?: CountMap) {
   if (__DEV__) {
     seen = seen || new Map()
   }
-
+// 1whatch
   flushPreFlushCbs(seen)
 
   // Sort queue before flush.
@@ -248,6 +247,7 @@ function flushJobs(seen?: CountMap) {
     : NOOP
 
   try {
+    // 每个任务的执行，微任务
     for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
       const job = queue[flushIndex]
       if (job && job.active !== false) {
